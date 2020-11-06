@@ -36,6 +36,12 @@ class Category extends Model
     {
         return $this->belongsTo(Category::class);
     }
+    public function children()
+    {
+        //hasMany  一对多
+        return $this->hasMany(Category::class, 'parent_id');
+    }
+
 
     //获取所有祖先类目的ID值访问器
     public function getPathIdsAttribute()
