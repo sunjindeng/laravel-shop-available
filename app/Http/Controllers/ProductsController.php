@@ -7,6 +7,7 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Models\Category;
+use App\Services\CategoryService;
 
 class ProductsController extends Controller
 {
@@ -53,7 +54,6 @@ class ProductsController extends Controller
                 }
             }
         }
-
         $products = $builder->paginate(16);
         return view('products.index', [
             'products' => $products,
