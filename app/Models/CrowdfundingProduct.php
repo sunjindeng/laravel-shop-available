@@ -29,7 +29,7 @@ class CrowdfundingProduct extends Model
      * @var string[] $fillable 批量操作时可以修改的字段
      */
     protected $fillable = ['total_amount', 'target_amount', 'user_count', 'status', 'end_at'];
-
+    //end_at 会自动转换为Carbon类型
     protected $dates = ['end_at'];
 
     public $timestamps = false;
@@ -41,6 +41,7 @@ class CrowdfundingProduct extends Model
 
     public function getPercentAttribute()
     {
+        //已筹金额除以目标金额
         $value = $this->attributes['total_amount'] / $this->attributes['target_amount'];
         //格式化
         return floatval(number_format($value * 100, 2, '.', ''));
