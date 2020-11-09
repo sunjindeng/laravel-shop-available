@@ -47,8 +47,10 @@
                 <td>{{ \App\Models\Order::$shipStatusMap[$order->ship_status] }}</td>
             </tr>
             <!-- 订单发货开始 -->
-            <!-- 如果订单未发货，展示发货表单 -->
-            @if($order->ship_status === \App\Models\Order::SHIP_STATUS_PENDING)
+            <!-- 如果订单未发货或者订单不是众筹订单或者众筹订单状态为成功，展示发货表单 -->
+            @if($order->ship_status === \App\Models\Order::SHIP_STATUS_PENDING &&
+                ($order->type !== \App\Models\Order::TYPE_CROWDFUNDING ||
+                $order->items[0]->product->crowdfunding->status === \App\Models\CrowdfundingProduct::STATUS_SUCCESS))
                 <!-- 加上这个判断条件 -->
                 @if($order->refund_status !== \App\Models\Order::REFUND_STATUS_SUCCESS)
                 <tr>
