@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -47,6 +48,8 @@ Route::group(['middleware' => ['auth', 'verified']], function() {
     Route::get('payment/{order}/wechat', 'PaymentController@payByWechat')->name('payment.wechat');
 
     Route::get('coupon_codes/{code}', 'CouponCodesController@show')->name('coupon_codes.show');
+
+    Route::post('crowdfunding_orders', 'OrdersController@crowdfunding')->name('crowdfunding_orders.store');
 });
 
 Route::get('products/{product}', 'ProductsController@show')->name('products.show');
@@ -61,4 +64,13 @@ Route::get('alipay', function(){
        'subjuct' => 'test subject -测试',
         'product_code' => time()
     ]);
+});
+//测试邮箱发送
+Route::get('send/email', function () {
+    return (new MailMessage)
+        ->subject('订单支付成功')  // 邮件标题
+        ->greeting('孙晋登，您好：') // 欢迎词
+        ->line('您于2020-11-09 创建的订单已经支付成功。') // 邮件内容
+        ->action('查看订单', 'https://www.baidu.com') // 邮件中的按钮及对应链接
+        ->success(); // 按钮的色调
 });
