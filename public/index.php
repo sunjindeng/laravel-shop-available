@@ -20,7 +20,7 @@ define('LARAVEL_START', microtime(true));
 | loading any of our classes later on. It feels great to relax.
 |
 */
-
+//composer生成定义的自动加载器
 require __DIR__.'/../vendor/autoload.php';
 
 /*
