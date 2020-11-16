@@ -53,10 +53,4 @@ class Handler extends ExceptionHandler
     {
         return parent::render($request, $exception);
     }
-
-    //默认精确度为小数点后两位
-    public function big_number($number, $scale =2)
-    {
-        return new \Moontoast\Math\BigNumber($number, $scale);
-    }
 }

@@ -44,7 +44,7 @@ class Installment extends Model
         return $this->belongsTo(Order::class);
     }
 
-    public function item()
+    public function items()
     {
         return $this->hasMany(InstallmentItem::class);
     }

@@ -192,5 +192,24 @@ class PaymentController extends Controller
         //第一期的还款日期为明天凌晨0点
         $dueDate = Carbon::tomorrow();
         //计算第一期的本金
+        $base = big_number($order->total_amount)->divide($count)->getValue();
+        //计算每一期的手续费
+        $fee = big_number($base)->multiply($installment->fee_rate)->divide(100)->getValue();
+        //根据用户选择的还款期数，创建对应数量的还款计划
+        for ($i = 0; $i < $count; $i++) {
+            //最后一期的本金需要用总本金减去前面几期的本金
+            if ($i === $count - 1) {
+                $base = big_number($order->total_amount)->subtract(big_number($base)->multiply($count -1));
+            }
+            $installment->items()->create([
+                'sequence' => $i,
+                'base' => $base,
+                'fee' => $fee,
+                'due_date' => $dueDate
+            ]);
+            //还款日期加30天
+            $dueDate = $dueDate->copy()->addDays(30);
+        }
+        return $installment;
     }
 }
