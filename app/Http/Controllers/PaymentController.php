@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Events\OrderPaid;
 use App\Exceptions\InvalidRequestException;
+use App\Models\Installment;
 use App\Models\Order;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Endroid\QrCode\QrCode;
+use Illuminate\Validation\Rule;
 
 class PaymentController extends Controller
 {
@@ -149,5 +151,46 @@ class PaymentController extends Controller
     protected function afterPaid(Order $order)
     {
         event(new OrderPaid($order));
+    }
+
+    public function payByInstallment(Order $order, Request $request)
+    {
+        //判断订单是否属于当前用户
+        $this->authorize('own', $order);
+        //订单以支付或者已关闭
+        if ($order->paid_at || $order->closed) {
+            throw new InvalidRequestException('订单状态不正确');
+        }
+        //订单不满足最低分期付款
+        if ($order->total_amount < config('app.min_installment_amount')) {
+            throw new InvalidRequestException('订单金额低于最低分期金额');
+        }
+        //校验用户提交的还款月数，数值必须是我们配置好的费率的期数
+        $this->validate($request, [
+            'count' => ['required', Rule::in(array_keys(config('app.installment_fee_rate')))],
+        ]);
+        //删除同一笔订单发起过其他的状态是未支付的分期付款，
+        Installment::query()
+            ->where('order_id', $order->id)
+            ->where('status', Installment::STATUS_FINISHED)
+            ->delete();
+        $count = $request->input('count');
+        //创建一个新的分期付款对象
+        $installment = new Installment([
+            //总本金即为商品订单总金额
+            'total_amount' => $order->total_amount,
+            //分期期数
+            'count' => $count,
+            // 从配置文件中读取相应期数的费率
+            'fee_rate' => config('app.installment_fee_rate')[$count],
+            //逾期费率
+            'fine_rate' => config('app.installment_fine_rate'),
+        ]);
+        $installment->user()->associate($request->user());
+        $installment->order()->associate($order);
+        $installment->save();
+        //第一期的还款日期为明天凌晨0点
+        $dueDate = Carbon::tomorrow();
+        //计算第一期的本金
     }
 }
