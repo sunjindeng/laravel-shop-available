@@ -32,7 +32,7 @@ class InstallmentItem extends Model
         'refund_status'
     ];
 
-    protected $dates = ['due_status'];
+    protected $dates = ['due_date'];
 
     public function installment()
     {
