@@ -47,14 +47,14 @@ class InstallmentItem extends Model
         //可选参数，用于表示我们希望的计算精度（即小数点后几位）提供了常见的运算方法，add（），subtract()减法，multiply（）乘法，divide（）除法，等等
         //big_number 在helpers.php中以封装
         $total = big_number($this->base, 2)->add($this->fee);
-        if(is_null($this->fine)) {
-            $total->add($this->fee);
+        if(!is_null($this->fine)) {
+            $total->add($this->fine);
         }
         return $total->getValue();
     }
 
     //当前还款计划是否已经逾期访问器
-    public function getIsOrderdueAttribute()
+    public function getIsOverdueAttribute()
     {
         return Carbon::now()->gt($this->due_date);
     }
