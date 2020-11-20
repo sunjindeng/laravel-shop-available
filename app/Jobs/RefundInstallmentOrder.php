@@ -45,7 +45,7 @@ class RefundInstallmentOrder implements ShouldQueue
             return;
         }
         //遍历分期付款的分期记录
-        foreach ($installment as $item) {
+        foreach ($installment->items as $item) {
             //如果还款计划为支付，或者退款状态为退款成功或退款中，则跳过
             if (!$item->paid_at || in_array($item->refund_status, [
                     InstallmentItem::REFUND_STATUS_PROCESSING,
@@ -55,7 +55,7 @@ class RefundInstallmentOrder implements ShouldQueue
             }
             //调用退款逻辑
             try {
-                $this->refundstallmentItem($item);
+                $this->refundInstallmentItem($item);
             }catch (\Exception $exception) {
                 \Log::warning('分期退款失败：'. $exception->getMessage(), ['installment_item_id' => $item->id]);
                 //如果退款报错了，直接跳过，继续处理下一个

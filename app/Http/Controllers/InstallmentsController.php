@@ -9,7 +9,6 @@ use App\Models\InstallmentItem;
 use App\Models\Order;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use function foo\func;
 
 class InstallmentsController extends Controller
 {
