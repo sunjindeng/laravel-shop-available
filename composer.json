@@ -10,6 +10,7 @@
     "require": {
         "php": "^7.2.5",
         "dragonmantank/cron-expression": "2.0",
+        "elasticsearch/elasticsearch": "~7.0",
         "encore/laravel-admin": "1.7.15",
         "endroid/qr-code": "^3.7",
         "fideloper/proxy": "^4.2",
