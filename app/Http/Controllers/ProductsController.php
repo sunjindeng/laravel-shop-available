@@ -116,8 +116,7 @@ class ProductsController extends Controller
                     //指明nested字段
                     'path' => 'properties',
                     'query' => [
-                        ['term' => ['properties.name' => $name]],
-                        ['term' => ['properties.value' => $value]],
+                        ['term' => ['properties.search_value' => $name]],
                     ]
                 ]
             ];
@@ -143,6 +142,7 @@ class ProductsController extends Controller
                 });
 
         }
+
         //通过wherein方法从数据库中读取商品
         $products = Product::query()
             ->whereIn('id', $productIds)
@@ -160,7 +160,7 @@ class ProductsController extends Controller
                 'order' => $order
             ],
             'category' => $category ?? null,
-            'properties' => $properties,
+            'properties' => $properties ?? null,
             'propertyFilters' => $propertyFilters,
         ]);
         /**

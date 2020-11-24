@@ -78,6 +78,7 @@
                     @endif
                     <!-- 分面搜索结果开始 -->
                     <!-- 遍历聚合的商品属性 -->
+                    @if ($properties)
                     @foreach($properties as $property)
                         <div class="row">
                         <!-- 输出属性名 -->
@@ -91,6 +92,7 @@
                         </div>
                         </div>
                     @endforeach
+                    @endif
                     <!-- 分面搜索结果结束 -->
                 </div>
                 <!-- 展示子类目结束 -->
