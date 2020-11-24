@@ -75,10 +75,74 @@ class ProductsController extends Controller
             }
 
         }
-
+        //只有当用户输入搜索词或者使用了类目帅选的时候才会做聚合
+        if ($search || isset($category)) {
+            $params['body']['aggs'] = [
+                'properties' => [
+                    'nested' => [
+                        'path' => 'properties',
+                    ],
+                    'aggs' => [
+                        'properties' => [
+                            'terms' => [
+                                'field' => 'properties.name',
+                            ],
+                            'aggs' => [
+                                'value' => [
+                                    'terms' => [
+                                        'field' => 'properties.value',
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ];
+        }
+        //从用户请求参数获取filters
+        $propertyFilters = [];
+        if ($filterString = $request->input('filters')) {
+            //将获取的字符串用符号 ｜ 拆分成数组
+            $filterArray = explode('|', $filterString);
+            foreach ($filterArray as $filter) {
+                //将字符串用符号 ： 拆分成两部分并且分别赋值给$name 和  $value 两个变量
+                list($name, $value) = explode(':', $filter);
+                $propertyFilters[$name] = $value;
+            }
+            //添加到filter类型中
+            $params['body']['query']['bool']['filter'][] = [
+                //由于我们要筛选的是nested类型下的属性，因此需要用nested查询
+                'nested' => [
+                    //指明nested字段
+                    'path' => 'properties',
+                    'query' => [
+                        ['term' => ['properties.name' => $name]],
+                        ['term' => ['properties.value' => $value]],
+                    ]
+                ]
+            ];
+        }
         $result = app('es')->search($params);
         //通过cpllect函数将返回结果转为集合，并通过集合的pluck方法取代返回的商品ID数组
         $productIds = collect($result['hits']['hits'])->pluck('_id')->all();
+        $properites = [];
+        //如果返回结果里有aggregations字段，说明做了分面搜索
+        if (isset($result['aggregations'])) {
+            //使用collect函数将返回值转为集合
+            $properties = collect($result['aggregations']['properties']['properties']['buckets'])
+                ->map(function ($bucket) {
+                    //通过map方法取出我们需要的字段
+                    return [
+                        'key' => $bucket['key'],
+                        'value' => collect($bucket['value']['buckets'])->pluck('key')->all(),
+                    ];
+                }   )
+                ->filter(function ($property) use ($propertyFilters) {
+                    //过滤掉只剩下一个值，或者 已经在筛选条件里的属性
+                    return count($property['value']) > 1 && !isset($propertyFilters[$property['key']]);
+                });
+
+        }
         //通过wherein方法从数据库中读取商品
         $products = Product::query()
             ->whereIn('id', $productIds)
@@ -95,7 +159,9 @@ class ProductsController extends Controller
                 'search' => $search,
                 'order' => $order
             ],
-            'category' => $category ?? null
+            'category' => $category ?? null,
+            'properties' => $properties,
+            'propertyFilters' => $propertyFilters,
         ]);
         /**
          *
