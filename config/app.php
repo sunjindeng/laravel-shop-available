@@ -230,6 +230,7 @@ return [
     ],
 
     'order_ttl' => 1800,
+    'seckill_order_ttl' => 600,
     'ngrok_url' => env('NGROK_URL'),
     //分期费率，key为期数，value 为费率
     'installment_fee_rate' => [
